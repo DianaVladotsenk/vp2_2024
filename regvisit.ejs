@@ -14,20 +14,21 @@
 <p>See leht on loodud õppetööö raames <a href="https://www.tlu.ee" target="_blank" > Tallina Ülikoos </a>, Digitehnoloogiate insituudis ja ei sisalda tõsiseltvõetavat materjalid</p>
 <hr>
 <ul>
-<li><a href = "/timenow">Avalehele</a></li>
-<li><a href = "/vanas]nad">Vanasonad</a></li>
-<li><a href = "/regvisit">Registreeri oma kulastus. Pane nimi kirja</a></li>
+<li><a href = "/">Avalehele</a></li>
 </ul>
 <hr>
+<h2>Registreeri oma kulastus sellele veebilehele</h2>
+<form>
+<label for="firstNameInput">Sisesta oma eesnimi:</label>
+<input type="text" id="firstNameInput" name="firstNameInput" placeholder="Eesnimi ...">
+<br>
+<form>
+<label for="lastNameInput">Sisesta oma Perekonnanimi:</label>
+<input type="text" id="lastNameInput" name="lastNameInput" placeholder="Perekonnanimi ...">
+<br>
 
-<h2><%= h2 %></h2>
 
-<p>Selle lehe avamise hetkel oli:</p>
-<ol>
-   <% listData.forEach(function(phrase){ %>
-<%= phrase %>
-<% }); %>
-</ol>
+</form>
 
 </body>
 </html>
