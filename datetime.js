@@ -1,4 +1,4 @@
- const dateFormatted = function.(){
+ const dateFormatted = function(){
 //function dateFormatted(){
  let timeNow = new Date();
  let dateNow = timeNow.getDate();
@@ -17,6 +17,6 @@
  return dateEt = dateNow + "." + monthNamesEt[monthNow] + "." + yearNow + "." + dayNamesEt[dayNow] + "." + hourNow + "." + minuteNow + "." + secNow;
  }
 
-module.exports = {dateEtNow: dateFormattedEt,weekDayEtNow: weekDayEt, timeFormattedNow:timeFormattedEt,monthNamesEt};
+module.exports = {dateFormatted: dateEt,dayNamesEt: dayNow, timeFormattedNow:hourNow,minuteNow,secNow,monthNamesEt};
 console.log("Praegu on" + dateEt);
 //exports - ekspordib
