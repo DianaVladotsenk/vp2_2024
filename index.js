@@ -119,6 +119,40 @@ app.get("/visitlog", (req, res) => {
 });
 
 
+app.get("/regvisitdb", (req,res)=>{
+	let notice = "";
+	let first_name="";
+	let last_name="";
+	res.render("reqvisitdb", {notice:notice, firstName: firstName, lastName:lastName});
+});
+
+app.post("regvisitdb", (req,res)=>{
+	let notice = "";
+	let first_name="";
+	let last_name="";
+	if(!req.body.firstNameInput || !req.body.lastNameInput){
+       //console.log("Osa anmdeid puudu");
+	   notice = "Osa anmdeid puudu";
+	   firstName = req.body.firstNameInput;
+	   lastName = req.body.lastNameInput;
+	   res.render("reqvisitdb", {notice:notice, firstName: firstName, lastName:lastName});
+	} else {
+	       let sqlReq = "INSERT INTO vp2visitlog (first_name, last_name) VALUES (?,?)";
+	         conn.query(sqlReq, [req.body.firstNameInput, req.body.lastNameInput],(err,sqlRes)=>{
+		   if (err){
+			   notice = "Thenilistel pohjustel andmeid ei salvestati";
+			   res.render("reqvisitdb", {notice:notice,firstName: firstName, lastName:lastName});
+			   throw err;
+		   } 
+		   else {
+			    notice = "Andmeid salvestati";
+			 //res.render("reqvisitdb", {notice:notice, firstName: firstName, lastName:lastName});
+			 res.redirect("/");
+		   }
+	   });
+	}
+});
+
 //filmid
 app.get("/eestifilm",(req, res) => {
 	res.render("eestifilm");
@@ -135,6 +169,12 @@ app.get("/eestifilm/tegelased",(req, res) => {
 			//console.log(sqlRes);
 			res.render("tegelased", {persons: sqlRes});
 	}});
+});
+
+
+//addperson
+app.get("/eestifilm/lisa",(req, res) => {
+	res.render("addperson");
 });
 
 
