@@ -6,10 +6,6 @@ const bodyparser = require("body-parser");
 const dbInfo = require("../../vp2024config");
 //db suhtlemine
 const mysql = require("mysql2");
-//fotode uleslaadimiseks 
-const multer = require("multer");
-//failide suuruse muutmine
-const sharp=require("sharp"); 
 
 
 
@@ -20,9 +16,7 @@ app.set("view engine", "ejs");
 //Maaran jagate avalikke failde kausta
 app.use(express.static("public"));
 //kasutame bodyparserit paringute parsemiseks(kui aunlt tekst,siis false, kui ka pildid jms siis true)
-app.use(bodyparser.urlencoded({extended:true}));
-//seadistame fotode uleslaadimiseks vahevara middleware mis maarab kataloogi multeri kuhu laetakse. Middleware rakendamine ja seadistamine
-const upload = multer({dest:"./public/gallery/orig"});
+app.use(bodyparser.urlencoded({extended:false}));
 
 //loon db uhenduse
 const conn = mysql.createConnection({
@@ -129,7 +123,7 @@ app.get("/regvisitdb", (req,res)=>{
 	let notice = "";
 	let first_name="";
 	let last_name="";
-	res.render("reqvisitdb", {notice:notice, firstName: first_name, lastName:last_name});
+	res.render("reqvisitdb", {notice:notice, firstName: firstName, lastName:lastName});
 });
 
 app.post("regvisitdb", (req,res)=>{
@@ -209,51 +203,14 @@ app.post('/addRole', (req, res) => {
     }
 });
 
-app.get("/photoupload",(req, res) => {
-	res.render("photoupload");
-});
-
-app.post("/photoupload", upload.single("photoInput"),(req,res)=>{
-	//console.log(req.body);
-	//console.log(req.file);
-	const fileName = "vp_" + Date.now() + ".jpg";
-	fs.rename(req.file.path, req.file.destination + "/"  + fileName, (err)=>{
-		console.log("faili muutmise viga:" + err);
-	});
-	sharp(req.file.destination + "/"  + fileName).resize(800,600).jpeg({quality:90}).toFile("./public/gallery/normal/" + fileName);
-	sharp(req.file.destination + "/"  + fileName).resize(100,100).jpeg({quality:90}).toFile("./public/gallery/thumb/" + fileName);
-	//salvestamie info andmebaasi
-	let sqlReq = "INSERT INTO vp_2024 (file_name, orig_name, alt_tekst, privacy, user_id) VALUES (?,?,?,?,?))";
-	const user_id = 1;
-	conn.query(sqlReq, [fileName, req.file.originalname, req.body.altInput, req.body.privacyInput, user_id], (err,result)=>{
-		if(err){
-			throw (err);
-	} else {
-		res.render("photoupload");
-	}
-	});
-	//res.render("photoupload");
-});
-
-//galerii
-app.get("/gallery", (req,res)=>{
-	let sqlReq = "SELECT file_name,alt_tekst, privacy FROM vp_2024 WHERE privacy==? AND deleted is NULL ORDER BY id DESC)";
-	const privacy = 3;
-	conn.query(sqlReq, [privacy], (err,result)=>{
-		if(err) {
-			throw(err);
-		} else {
-			console.log(result);
-		result.forEach(photo)=>{
-			photolist.push({href:"/gallery/thumb/" + result.file_name ,alt:photo.alt_text});
-		}
-		res.render("gallery")};
-})});
-
 
 
 
 app.listen(5215);
+
+
+
+
 
 //module.exports = {dateEtNow: dateFormattedEt,weekDayEtNow: weekDayEt, timeFormattedNow:timeFormattedEt,monthNamesEt};
 //data.split(";") - jagab ; semikoolonitele
