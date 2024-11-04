@@ -10,10 +10,15 @@ const mysql = require("mysql2");
 const multer = require("multer");
 //failide suuruse muutmine
 const sharp=require("sharp"); 
-
+//paroolide krupteerimine
+const bcrypt = require("bcrypt");
+//sessioonihaldur
+const session = require("express-session"); 
+//logout
 
 
 const app = express();
+
 
 //Maaran view mootori
 app.set("view engine", "ejs");
@@ -24,6 +29,10 @@ app.use(bodyparser.urlencoded({extended:true}));
 //seadistame fotode uleslaadimiseks vahevara middleware mis maarab kataloogi multeri kuhu laetakse. Middleware rakendamine ja seadistamine
 const upload = multer({dest:"./public/gallery/orig"});
 
+//sessiooni osa haldur
+app.use(session({secret:"mySecretKey", saveUninitiliazed: true, resave: true}));
+let mySession;
+
 //loon db uhenduse
 const conn = mysql.createConnection({
 	host: dbInfo.configData.host,
@@ -32,24 +41,73 @@ const conn = mysql.createConnection({
 	database: dbInfo.configData.dataBase
 });
 
-
+//sisselogimine
 app.get("/", (req,res)=>{
 	//res.send("express laks kaima!");
 	//console.log(dbInfo.configData.host);
 	res.render("index");
 });
-//app.get("/timenow",(req,res)=>{
-	//const weekDayEtNow  = dateTime.dayNamesEt()
-	//const dateEtNow = dateTime.dateFormatted();
-	//const timeNow =  dateTime.timeFormattedNow();
-	//res.render("timenow", {nowWD: weekdayEtNow, nowD: dateNow, nowT: timeNow});
-//});
-//<li><a href = "/timenow">Avalehele</a></li>
-//node.ejs <ul>
-//<li>Nadalapaev: <%= nowWD %></li>
-//<li>Kuupaev: <%= nowD %> </li>
-//<li>Kellaaeg: <%= nowWT %></li>
-//</ul>
+
+//logout
+app.get("/logout", (req,res)=>{
+	req.session.destroy();
+	mySession = null; //tuhi
+	res.redirect("/");
+});
+
+
+app.post("/", (req,res)=>{
+	let notice = null; //tuhjus
+	if(!req.body.emailInput || !req.body.passwordInput){
+		console.log("ok");
+		notice = "Sisselogimise andmed puudu";
+		res.render("index", {notice:notice});
+	} else {
+		let sqlReq = "SELECT id, password FROM vp24users WHERE email = ?";
+		conn.ecexute(sqlReq,[req.body.emailInput] ,(err,result)=> {
+			if(err) {
+				console.log("oi..52line::))))");
+		        notice="Tehnilise vea tottu ei saa sisselogida..";
+				console.log(err);
+		        res.render("index",{notice: notice});
+			} else {
+				//console.log();
+				if(result[0] !=null){
+					//raside kontrollimine
+					bcrypt.compare(req.body.passwordInput, result[0].password, (err,compareresult)=> {
+						if(err) {
+							notice = "Parool on vale."
+							res.render("index",{notice: notice});
+						} else {
+							//kui vorlustulemus on positiivne
+							if(compareresult == true){
+								notice = "Oled sisselogitud.";
+								//SESSIOON KASUTUSEL
+								mysession = req.session;
+								mySession.userId = result[0].id;
+								res.redirect("/home");
+							} else {
+								notice = "Ei ole sisselogitud. Paool ja kasutajatunnus on vigane";
+								res.render("index",{notice: notice});
+							}
+						}
+					});
+				} else {
+					notice = "Parool voi kasutajatunnus on vigane";
+					res.render("index",{notice: notice});
+					
+				}
+			}
+		});
+	}
+});
+
+
+
+//home
+app.get("/home", checkLogin, (req,res)=>{
+	res.render("home");
+});
 
 app.get("/vanas]nad", (req,res)=>{
 	let folkWisdom = [];
@@ -236,20 +294,80 @@ app.post("/photoupload", upload.single("photoInput"),(req,res)=>{
 });
 
 //galerii
-app.get("/gallery", (req,res)=>{
-	let sqlReq = "SELECT file_name,alt_tekst, privacy FROM vp_2024 WHERE privacy==? AND deleted is NULL ORDER BY id DESC)";
-	const privacy = 3;
-	conn.query(sqlReq, [privacy], (err,result)=>{
-		if(err) {
-			throw(err);
-		} else {
-			console.log(result);
-		result.forEach(photo)=>{
-			photolist.push({href:"/gallery/thumb/" + result.file_name ,alt:photo.alt_text});
-		}
-		res.render("gallery")};
-})});
+app.get("/gallery", (req, res) => {
+    let sqlReq = "SELECT file_name, alt_text, privacy FROM vp_2024 WHERE privacy = ? AND deleted IS NULL ORDER BY id DESC";
+    const privacy = 3;
+    conn.query(sqlReq, [privacy], (err, result) => {
+        if (err) {
+            throw err;
+        } else {
+            let photolist = [];
+            result.forEach(photo => {
+                photolist.push({href: "/gallery/thumb/" + photo.file_name, alt: photo.alt_text });
+            });
+            res.render("gallery", { photolist: photolist });
+        }
+    });
+});
 
+app.get("/signup", (req, res) => {
+	res.render("signup");
+});
+
+
+
+app.post("/signup", (req, res) => {
+	let notice="Ootan andmeid..";
+	if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.birtDateInput || !req.body.genderInput || req.body.passwordInput.len <= 8 || req.body.passwordInput !== req.body.confirmPaswwordInput ){
+		console.log("oi..");
+		notice="Andmed on puudud..";
+		res.render("signup",{notice: notice});
+		} else {
+			notice="Andmed on korras";
+			bcrypt.genSalt(10,(err,salt)=>{
+				if(err){
+					notice = "Tehniline viga. Kasutaja pole loodud";
+					res.render("signup",{notice: notice});
+				} else {
+					bcrypt.hash(req.body.passwordInput, salt, (err,pwdHash)=>{
+					if(err){
+						notice = "Tehniline viga. Kasutaja pole loodud";
+					    res.render("signup",{notice: notice});
+					} else {
+						let sqlReq = "INSERT into vp24users (first_name, last_name, birth_date, gender, email, password) VALUES (?,?,?,?,?,?)";
+						conn.execute(sqlReq[req.body.firstNameInput,req.body.lastNameInput,req.body.birtDateInput,req.body.genderInput, req.body.emailInput, pwdHash], (err,result)=>{
+							if(err){
+								notice = "Tehniline viga andmebaasi kirjutamisel ja parooli krupteerimisel.Line 283.";
+					            res.render("signup",{notice: notice});
+							} else {
+								notice = "Kasutaja nimega " + req.body.emailInput + " on loodud.";
+					            res.render("signup",{notice: notice});
+							}
+						});
+					}
+					});			
+				}
+			});
+		    //res.render("signup"{notice: notice});
+		}
+	//res.render("signup");
+});
+
+function checkLogin(req,res,next) {
+	if(mySession != null){
+		if(mySession.userId:true){
+			next();
+		} else {
+			notice = "Sellist kasutajat pole";
+			res.redirect("/");
+		}
+	}
+	else {
+		res.redirect("/");
+	}
+} 
+
+//sessioon
 
 
 
