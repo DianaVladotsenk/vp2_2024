@@ -336,7 +336,7 @@ app.post("personrelations", (err,results) =>{
 			throw err;
 		} else {
 			console.log(results);
-			res.render("personrelations",{personList:results});
+			res.render("personrelations",{personrelations:results});
 	}
 });
 
