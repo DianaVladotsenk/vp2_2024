@@ -13,17 +13,14 @@
 <h1>Dianchik Vladõtsenko</h1>
 <p>See leht on loodud õppetööö raames <a href="https://www.tlu.ee" target="_blank" > Tallina Ülikoos </a>, Digitehnoloogiate insituudis ja ei sisalda tõsiseltvõetavat materjalid</p>
 <hr>
-
-<h2>Eesti filmid</h2>
 <ul>
-<li><a href = "/home">Avalehele</a></li>
-<li><a href = "/eestifilm/tegelased">Eesti filmitegelased</a></li>
-<li><a href = "/eestifilm/lisa">Lisa andmeid</a></li>
-<li><a href = "/eestifilm/lisaseos">Lisa sesosed</a></li>
+<li><a href = "/">Avalehele</a></li>
 </ul>
-
 <hr>
-
+<h2>Uhe tegelase film</h2>
+<<% persons.forEach(function(personrelations){%>
+	<li><%= item.first_name %> <%= item.first_name %>,sundinud: <%= item.birth_date %>, <a href ="/eestifilm/personrelations/<% item.id %>">Vaata seosed</a></li>
+	<% }); %>>
 
 </body>
 </html>

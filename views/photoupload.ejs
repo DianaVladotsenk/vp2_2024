@@ -5,7 +5,9 @@
 <head>
 <meta charset = "utf-8">
 <title>Diana Vladõtsenko</title>
-
+<link rel = "stylesheet" href = "/public/style/style.css">
+<link rel = "stylesheet" href = "/public/style/modal.css">
+<script src="/script/gallery.js" defer></script>
 </head>
 <body>
 
@@ -24,9 +26,6 @@
 	
 	<label for="altInput">Sisesta lternatiiv tekst:</label>
 	<input type="text" id="altInput" name="altInput" placeholder="Sellel pildil ...">
-	<!-- <label for ="privacyInput1">Privaatne omanik</label> -->
-	<!-- <input type="radio" id="privacyInput2" name="privacyInput" value="2" checked>
-	<label for ="privacyInput1">Sisselogitud kasutajale</label> -->
 	<input type="radio" id="privacyInput3" name="privacyInput" value="3" checked>
 	<label for ="privacyInput1">Avalik</label>
 	
@@ -34,9 +33,22 @@
 	
 <br>
 </form>
+<hr>
+<dialog id = "modal" class ="modalarea">
+	<span id="modalClose" class="modalclose">&times;</span>
+	<div class="modalhorizontal">
+	<div class = "modalvertical">
+		<p id = "modalcaption"></p>
+		<img id = "modalimage" src = "/pics/empty.png" alt= "galeriipilt">
+	</div>
+	</div>
+</dialog>
 <h2>Fotogalerii</h2>
-
-
+<div class="gallery">
+<% listData.forEach (function(image) {%>
+<img src = "<%=image.href%> <%=image.filename%>" alt=<% image.alt%> data-filename="<%image.filename%>" data-id="<%image.id%>" class="thumbs">
+<%});%>
+</div>
 
 
 </body>

@@ -14,7 +14,6 @@ const sharp=require("sharp");
 const bcrypt = require("bcrypt");
 //sessioonihaldur
 const session = require("express-session"); 
-//logout
 
 
 const app = express();
@@ -355,7 +354,7 @@ app.post("/signup", (req, res) => {
 
 function checkLogin(req,res,next) {
 	if(mySession != null){
-		if(mySession.userId:true){
+		if(mySession.userId==true){
 			next();
 		} else {
 			notice = "Sellist kasutajat pole";

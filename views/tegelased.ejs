@@ -23,9 +23,9 @@
 
  <h2>Tegelaste nimekiri:</h2>
  <ul>
- <% persons.forEach(function(item){%>
- <li><%= item.first_name %> <%= item.first_name %>,sundinud: <%= item.birth_date %></li>
- <% }); %>
+	<% persons.forEach(function(item){%>
+	<li><%= item.first_name %> <%= item.first_name %>,sundinud: <%= item.birth_date %>, <a href ="/eestifilm/personrelations/<% item.id %>">Vaata seosed</a></li>
+	<% }); %>
  </ul>
 
 </body>
